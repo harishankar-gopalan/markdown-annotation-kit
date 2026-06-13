@@ -16,16 +16,16 @@ export function stripMarkTags(raw: string): StripResult {
   const len = raw.length;
   const stack: { id: number; start: number }[] = [];
 
-  // 跟踪是否在代码块中（``` 或 ```language）
+  // Track whether the code is inside a code block (``` or ```language).
   let inCodeBlock = false;
 
-  // 跟踪是否在行内代码中（`）
+  // Track whether it is in inline code (`）
   let inInlineCode = false;
 
   while (i < len) {
-    // 检查代码块开始/结束（```）
+    // Check the start/end of the code block (```）
     if (raw.startsWith("```", i)) {
-      // 检查是否是代码块标记（前面是换行或字符串开始，后面是换行、空格、字母数字或字符串结束）
+      // Check if it is a code block marker (preceded by a newline or the start of the string, and followed by a newline, space, alphanumeric character, or the end of the string).
       const beforeIsNewlineOrStart = i === 0 || raw[i - 1] === "\n" || raw[i - 1] === "\r";
       const afterChar = i + 3 < len ? raw[i + 3] : "";
       const isCodeBlockMarker =
@@ -37,8 +37,8 @@ export function stripMarkTags(raw: string): StripResult {
 
       if (isCodeBlockMarker) {
         inCodeBlock = !inCodeBlock;
-        // 将代码块标记作为普通文本处理
-        // 处理完整的 ``` 标记（3个字符）
+        // Treat code block markers as plain text
+        // Handle the complete ``` tag (3 characters).
         for (let k = 0; k < 3 && i < len; k++) {
           boundaryMap.push(i);
           clean += raw[i];
@@ -48,46 +48,46 @@ export function stripMarkTags(raw: string): StripResult {
       }
     }
 
-    // 检查行内代码（`），但不在代码块中
+    // Check for inline code (`), but not within code blocks.
     if (!inCodeBlock && raw[i] === "`") {
-      // 检查前后是否有其他字符（不是 ```）
+      // Check for any other characters (other than ```) before or after.
       const prevChars = i >= 2 ? raw.slice(i - 2, i) : "";
       const nextChars = i + 3 <= len ? raw.slice(i + 1, i + 3) : "";
-      // 简单的行内代码检测：不是 ``` 的一部分
+      // Simple inline code detection: not part of ```
       if (prevChars !== "``" && nextChars !== "``") {
         inInlineCode = !inInlineCode;
       }
     }
 
-    // 检查 mark 标签（无论在代码块中还是不在）
-    // 注意：即使在代码块中，我们也需要解析 mark 标签，以便后续在 DOM 中高亮显示
+    // Check for <mark> tags (whether inside a code block or not)
+    // Note: We need to parse <mark> tags even within code blocks to enable subsequent highlighting in the DOM.
     if (raw[i] === "<") {
-      // 检查是否是 mark 标签开始
+      // Check if it is the start of a <mark> tag.
       if (raw.startsWith("<mark_", i)) {
         let j = i + 6;
         let num = "";
-        // 读取数字 ID
+        // Read the number ID
         while (j < len && /[0-9]/.test(raw[j])) {
           num += raw[j++];
         }
-        // 检查是否是完整的 mark 标签（以 > 结尾）
+        // Check if it is a complete `mark` tag (ending with `>`).
         if (j < len && raw[j] === ">") {
           const id = Number(num);
           stack.push({ id, start: clean.length });
-          // 跳过整个 <mark_id> 标签
+          // Pass the entire <mark_id> tag
           i = j + 1;
           continue;
         }
-        // 如果不是完整的 mark 标签，当作普通文本处理
+        // If it is not a complete `<mark>` tag, treat it as plain text.
       } else if (raw.startsWith("</mark_", i)) {
-        // 检查是否是 mark 标签结束
+        // Check if it is the end of a <mark> tag.
         let j = i + 7;
         let num = "";
-        // 读取数字 ID
+        // Read the number ID
         while (j < len && /[0-9]/.test(raw[j])) {
           num += raw[j++];
         }
-        // 检查是否是完整的 mark 标签（以 > 结尾）
+        // Check if it is a complete `mark` tag (ending with `>`).
         if (j < len && raw[j] === ">") {
           const id = Number(num);
           const openIndex = stack.findIndex((s) => s.id === id);
@@ -96,16 +96,16 @@ export function stripMarkTags(raw: string): StripResult {
             marks.push({ id, start: open.start, end: clean.length });
             stack.splice(openIndex, 1);
           }
-          // 跳过整个 </mark_id> 标签
+          // Skip the entire </mark_id> tag
           i = j + 1;
           continue;
         }
-        // 如果不是完整的 mark 标签，当作普通文本处理
+        // If it is not a complete `<mark>` tag, treat it as plain text.
       }
     }
 
-    // 如果在行内代码中，不解析其他内容，直接作为普通文本
-    // 注意：代码块中的内容也需要保留，但 mark 标签已经被解析了
+    // If within inline code, do not parse other content; treat it simply as plain text.
+    // Note: Content within code blocks must also be preserved, though the <mark> tag has already been parsed.
     if (inInlineCode && raw[i] !== "<") {
       boundaryMap.push(i);
       clean += raw[i];
@@ -113,7 +113,7 @@ export function stripMarkTags(raw: string): StripResult {
       continue;
     }
 
-    // 其他情况（包括代码块中的普通文本），正常处理
+    // Other cases (including plain text within code blocks) are handled normally.
     boundaryMap.push(i);
     clean += raw[i];
     i += 1;
@@ -128,15 +128,15 @@ export function injectMarkTags(
   endClean: number,
   id: number
 ): string {
-  // 计算在 raw markdown 中的精确位置
-  // boundaryMap[i] 表示 clean markdown 中第 i 个字符在 raw markdown 中的位置
+  // Calculate the exact position in the raw markdown
+  // boundaryMap[i] represents the position in the raw markdown of the i-th character in the clean markdown
   let startRaw: number;
   let endRaw: number;
 
   if (startClean < boundaryMap.length) {
     startRaw = boundaryMap[startClean];
   } else {
-    // 如果超出范围，使用 raw 的末尾
+    // If out of range, use the end of raw
     startRaw = raw.length;
   }
 
@@ -144,17 +144,17 @@ export function injectMarkTags(
     if (endClean === 0) {
       endRaw = 0;
     } else if (endClean === boundaryMap.length) {
-      // 如果 endClean 等于 boundaryMap 长度，说明是最后一个字符之后
+      // If endClean equals the length of boundaryMap, it indicates the position after the last character.
       endRaw = raw.length;
     } else {
-      // endClean 位置在 raw 中的位置
+      // endClean: the position within raw
       endRaw = boundaryMap[endClean];
     }
   } else {
     endRaw = raw.length;
   }
 
-  // 确保 endRaw >= startRaw
+  // Ensure endRaw >= startRaw
   if (endRaw < startRaw) {
     endRaw = startRaw;
   }

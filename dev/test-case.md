@@ -1,121 +1,118 @@
-# Markdown 批注组件测试用例
+# Markdown Annotation Component Test Cases
 
-## 测试场景：大量重复文本的标注测试
+## Test Scenario: Annotation Test with Repeated Text
 
-本文档包含大量重复的"批注"文本，用于测试组件能否准确标记每个出现的位置。
+This document contains multiple instances of the repeated text "annotation" to test whether the component can accurately mark each occurrence.
 
-## 已标注的示例
+## Annotated Examples
 
-以下是已经包含标注标签的示例：
+Below are examples that already include annotation tags:
 
-# Markdown 文档<mark_1>批注</mark_1>示例
+# Markdown Document <mark_1>Annotation</mark_1> Example
 
-## 功能<mark_2>特性</mark_2>
+## Functional <mark_2>Features</mark_2>
 
-这是一个功能强大的 Markdown 批注组件，支持以下特性：
+This is a powerful Markdown annotation component that supports the following features:
 
-- **文本选择批注** - 选中任意文本即可添加批注
+- **Text Selection Annotation** - Select any text to add an annotation
 
-- **双向锚定** - 点击批注卡片定位到原文，点击高亮文本定<mark_3>位到批注</mark_3>
+- **Bidirectional Anchoring** - Click an annotation card to locate the original text; click highlighted text to <mark_3>locate the annotation</mark_3>
 
-- **标签系统** - 使用 `<mark_N></mark_N>` 标签持久化批注数据
+- **Tagging System** - Use `<mark_N></mark_N>` tags to persist annotation data
 
-- **标签回显** - 自动识别并回显已保存的批注标签
+- **Tag Rendering** - Automatically recognize and render saved annotation tags
 
-## 重复文本测试区域
+## Repeated Text Test Area
 
-### 第一段：包含多个"批注"
+### Paragraph 1: Contains Multiple "Annotations"
 
-这是第一段文本，其中包含<mark_4>批注</mark_4>这个词。这段文本的目的是测试当文档中有多个相同的"批注"文本时，组件能否准确标记每个位置。请注意，这里又出现了<mark_5>批注</mark_5>这个词，但位置不同。
+This is the first paragraph, which contains the word <mark_4>annotation</mark_4>. The purpose of this paragraph is to test whether the component can accurately mark each location when there are multiple identical instances of the text "annotation" in the document. Note that the word <mark_5>annotation</mark_5> appears again here, but in a different location.
 
-### 第二段：更多重复文本
+### Paragraph 2: More Repeated Text
 
-在第二段中，我们继续测试重复文本的标注功能。这里有一个<mark_6>批注</mark_6>，后面还有另一个<mark_7>批注</mark_7>。即使文本完全相同，每个<mark_8>批注</mark_8>都应该被独立标记。
+In the second paragraph, we continue testing the annotation function for repeated text. Here is an <mark_6>annotation</mark_6>, followed by another <mark_7>annotation</mark_7>. Even though the text is identical, each <mark_8>annotation</mark_8> should be marked independently.
 
-### 第三段：连续重复
+### Paragraph 3: Consecutive Repetition
 
-第三段展示了连续出现的重复文本：<mark_9>批注</mark_9>和<mark_10>批注</mark_10>紧挨着出现。这种情况特别考验组件的位置计算能力。
+The third paragraph demonstrates consecutive repeated text: <mark_9>annotation</mark_9> and <mark_10>annotation</mark_10> appear right next to each other. This scenario specifically tests the component's ability to calculate positions.
 
-### 第四段：混合场景
+### Paragraph 4: Mixed Scenario
 
-第四段混合了已标记和未标记的文本。这里有一个已标记的<mark_11>批注</mark_11>，后面还有一个未标记的批注。用户应该能够继续标记未标记的批注。
+The fourth paragraph mixes annotated and unannotated text. There is a marked <mark_11>annotation</mark_11> here, followed by an unmarked one. The user should be able to proceed to mark the unmarked annotation.
 
-## 长文本中的重复
+## Repetition in long text
 
-这是一段较长的文本，用于测试在长文本中标记重复文本的能力。当文本很长时，位置计算可能会更加复杂。这里有一个<mark_12>批注</mark_12>出现在文本的中间位置。后面还有更多的内容，包括另一个<mark_13>批注</mark_13>出现在文本的末尾附近。
+This is a longer passage of text used to test the ability to mark repeated text within a long text. Position calculations can be more complex when the text is long. Here, an <mark_12>annotation</mark_12> appears in the middle of the text. There is more content following this, including another <mark_13>annotation</mark_13> that appears near the end of the text. ## Text within code blocks
 
-## 代码块中的文本
-
-虽然代码块中的文本通常不应该被标记，但为了测试，我们也包含了一些示例：
+Although text inside code blocks generally shouldn't be marked, we have included some examples for testing purposes:
 
 ```typescript
-// 这是一个代码示例
-// 包含注释：批注功能测试
+// This is a code example
+// Includes a comment: annotation feature test
 function addAnnotation(text: string) {
-  return `批注: ${text}`;
+return `Annotation: ${text}`;
 }
 ```
 
-## 列表中的重复
+## Repetition in lists
 
-- 列表项一：包含<mark_14>批注</mark_14>的列表项
-- 列表项二：另一个包含<mark_15>批注</mark_15>的列表项
-- 列表项三：第三个包含<mark_16>批注</mark_16>的列表项
-- 列表项四：未标记的批注（可以继续标记）
+- List item 1: List item containing an <mark_14>annotation</mark_14>
+- List item 2: Another list item containing an <mark_15>annotation</mark_15>
+- List item 3: A third list item containing an <mark_16>annotation</mark_16>
+- List item 4: Unmarked annotation (can be marked)
 
-## 标题中的重复
+## Repetition in headings
 
-### 标题一：包含<mark_17>批注</mark_17>的标题
+### Heading 1: Heading containing an <mark_17>annotation</mark_17>
 
-### 标题二：另一个包含<mark_18>批注</mark_18>的标题
+### Heading 2: Another heading containing an <mark_18>annotation</mark_18>
 
-### 标题三：未标记的批注标题
+### Heading 3: Heading with an unmarked annotation
 
-## 测试说明
+## Test Instructions
 
-### 测试步骤
+### Test Steps
 
-1. **测试已标记文本的回显**
-   - 检查所有已标记的"批注"是否正确高亮显示
-   - 检查侧边栏是否正确显示所有批注卡片
+1. **Test rendering of marked text**
+- Check that all marked "annotations" are highlighted correctly
+- Check that the sidebar correctly displays all annotation cards
 
-2. **测试新标记的准确性**
-   - 选中未标记的"批注"文本
-   - 添加批注，检查是否正确标记到选中的位置
-   - 验证不会影响其他已标记的文本
+2. **Test accuracy of new markings**
+- Select unmarked "annotation" text
+- Add an annotation and check if it is marked correctly at the selected location
+- Verify that it does not affect other marked text
 
-3. **测试重复文本的独立标记**
-   - 依次标记所有未标记的"批注"
-   - 验证每个"批注"都被独立标记，互不干扰
-   - 检查批注序号是否正确递增
+3. **Test independent marking of repeated text**
+- Mark all unmarked "annotations" one by one
+- Verify that each "annotation" is marked independently without interference
+- Check that annotation sequence numbers increment correctly
 
-4. **测试位置计算的准确性**
-   - 标记不同位置的相同文本
-   - 验证每个标记都准确对应到选中的位置
-   - 检查不会出现位置偏移或重复标记
+4. **Test accuracy of location calculation**
+- Mark the same text at different locations
+- Verify that each mark corresponds accurately to the selected location
+- Check for positional offsets or duplicate markings
 
-### 预期结果
+### Expected Results
 
-- 所有已标记的"批注"都应该正确高亮显示
-- 新标记的"批注"应该准确标记到用户选中的位置
-- 即使有多个相同的文本，每个标记都应该独立且准确
-- 批注序号应该按标记顺序递增
-- 点击批注卡片应该能准确跳转到对应的文本位置
+- All marked "annotations" should be highlighted correctly
+- Newly marked "annotations" should be marked accurately at the user-selected location
+- Even when identical text appears multiple times, each annotation must be distinct and accurate:
+- Annotation sequence numbers should increment based on the order of the annotations.
+- Clicking an annotation card should navigate precisely to the corresponding text location.
 
-### 边界情况测试
+### Edge Case Testing
 
-1. **连续重复文本**：测试标记连续出现的相同文本
-2. **已标记区域附近**：测试在已标记文本附近标记新文本
-3. **跨段落标记**：测试标记跨越多个段落的文本
-4. **特殊字符**：测试包含特殊字符的文本标记
+1. **Consecutive Duplicate Text**: Testing annotations on identical text that appears consecutively.
+2. **Proximity to Existing Annotations**: Testing annotations placed near previously annotated text.
+3. **Cross-Paragraph Annotations**: Testing annotations that span multiple paragraphs.
+4. **Special Characters**: Testing annotations on text containing special characters.
 
-## 总结
+## Summary
 
-这个测试用例包含了：
-- 18 个已标记的"批注"文本
-- 多个未标记的"批注"文本，可用于继续测试
-- 各种场景：标题、段落、列表、代码块等
-- 不同的位置：开头、中间、末尾、连续等
+This test case includes:
+- 18 annotated text segments.
+- Multiple unannotated text segments available for further testing.
+- Various scenarios: headings, paragraphs, lists, code blocks, etc.
+- Diverse locations: beginning, middle, end, consecutive sequences, etc.
 
-通过这个测试用例，可以全面验证组件在处理重复文本时的准确性和可靠性。
-
+This test case enables comprehensive verification of the component's accuracy and reliability when handling duplicate text.

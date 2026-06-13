@@ -1,7 +1,7 @@
 /**
- * 使用 split 方法通过上下文精确定位重复文本
- * 这是简单粗暴但有效的方法：通过前后文本来唯一确定位置
- */
+ * Use the split method to precisely locate duplicate text based on context.
+ * This is a simple, brute-force, yet effective approach: uniquely identifying the location using the surrounding text.
+*/
 export function getTextPositionByContext(
   clean: string,
   selectedText: string,
@@ -11,20 +11,20 @@ export function getTextPositionByContext(
     return null;
   }
 
-  // 使用 split 方法分割文本
+  // Use the split method to split the text.
   const parts = clean.split(selectedText);
 
   if (parts.length < 2) {
-    // 没有找到匹配的文本
+    // No matching text found.
     return null;
   }
 
-  // 规范化上下文文本（去除多余空白）
+  // Normalize contextual text (remove extra whitespace)
   const normalize = (text: string) => text.replace(/\s+/g, " ").trim();
   const normalizedBefore = normalize(context.before);
   const normalizedAfter = normalize(context.after);
 
-  // 遍历所有可能的匹配位置，通过前后上下文来精确定位
+  // Iterate through all possible matching positions and pinpoint the location using the surrounding context.
   let currentPos = 0;
   let bestMatch: {
     start: number;
@@ -36,12 +36,12 @@ export function getTextPositionByContext(
   for (let i = 0; i < parts.length - 1; i++) {
     const beforePart = parts[i];
 
-    // 计算当前位置
+    // Calculate current location
     currentPos += beforePart.length;
     const start = currentPos;
     const end = currentPos + selectedText.length;
 
-    // 获取该位置前后的上下文
+    // Retrieve the context surrounding this location.
     const contextBefore = clean.slice(
       Math.max(0, start - Math.max(context.before.length, 100)),
       start
@@ -51,15 +51,15 @@ export function getTextPositionByContext(
       Math.min(clean.length, end + Math.max(context.after.length, 100))
     );
 
-    // 规范化获取的上下文
+    // Standardize acquired context
     const normalizedContextBefore = normalize(contextBefore);
     const normalizedContextAfter = normalize(contextAfter);
 
-    // 计算匹配分数（匹配的字符数）
+    // Calculate the match score (number of matching characters)
     let beforeScore = 0;
     let afterScore = 0;
 
-    // 检查前文匹配：从后往前比较
+    // Check for preceding matches: compare from back to front.
     if (normalizedBefore.length > 0 && normalizedContextBefore.length > 0) {
       const minLen = Math.min(normalizedBefore.length, normalizedContextBefore.length);
       for (let j = 1; j <= minLen; j++) {
@@ -71,7 +71,7 @@ export function getTextPositionByContext(
       }
     }
 
-    // 检查后文匹配：从前往后比较
+    // Check for subsequent matches: Compare from beginning to end.
     if (normalizedAfter.length > 0 && normalizedContextAfter.length > 0) {
       const minLen = Math.min(normalizedAfter.length, normalizedContextAfter.length);
       for (let j = 1; j <= minLen; j++) {
@@ -83,18 +83,18 @@ export function getTextPositionByContext(
       }
     }
 
-    // 如果前后文都完全匹配，直接返回
+    // If both the preceding and following contexts match perfectly, return immediately.
     if (beforeScore === normalizedBefore.length && afterScore === normalizedAfter.length) {
       return { start, end };
     }
 
-    // 记录最佳匹配（优先选择前后文匹配都较好的）
+    // Record the best match (prioritizing matches that are strong in both the preceding and following contexts).
     if (!bestMatch) {
       bestMatch = { start, end, beforeScore, afterScore };
     } else {
       const currentTotal = beforeScore + afterScore;
       const bestTotal = bestMatch.beforeScore + bestMatch.afterScore;
-      // 如果当前匹配更好，或者总分相同但前后文都匹配更好
+      // If the current match is better, or if the total score is the same but the surrounding context matches better...
       if (
         currentTotal > bestTotal ||
         (currentTotal === bestTotal &&
@@ -106,17 +106,17 @@ export function getTextPositionByContext(
       }
     }
 
-    // 移动到下一个可能的位置
+    // Move to the next possible position.
     currentPos += selectedText.length;
   }
 
-  // 如果找到了匹配，返回最佳匹配
-  // 要求前后文至少各有一些匹配，或者只有一个匹配位置
+  // If a match is found, return the best match
+  // Requires at least some matching context on both sides, or only a single matching position
   if (bestMatch) {
     const minBeforeScore = Math.min(3, normalizedBefore.length);
     const minAfterScore = Math.min(3, normalizedAfter.length);
 
-    // 如果前后文都有一定匹配，或者只有一个匹配位置，返回它
+    // If there are matches in both the preceding and following contexts, or if there is only a single matching position, return it.
     if (
       (bestMatch.beforeScore >= minBeforeScore && bestMatch.afterScore >= minAfterScore) ||
       (bestMatch.beforeScore > 0 && bestMatch.afterScore > 0) ||

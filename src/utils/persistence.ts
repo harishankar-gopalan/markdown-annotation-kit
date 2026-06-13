@@ -2,46 +2,46 @@ import { AnnotationItem } from "../MarkdownAnnotator";
 import { ParsedMark } from "./mark";
 
 /**
- * 批注数据的完整结构，用于持久化
+ * Complete structure of annotation data for persistence
  */
 export interface AnnotationData {
   /**
-   * 批注列表
+   * List of annotations
    */
   annotations: AnnotationItem[];
   /**
-   * 标记位置信息
+   * Mark location information
    */
   marks: ParsedMark[];
   /**
-   * 原始 Markdown 内容（包含标签）
+   * Raw Markdown content (including tags)
    */
   markdown: string;
   /**
-   * 清理后的 Markdown 内容（不包含标签）
+   * Cleaned Markdown content (excluding tags)
    */
   cleanMarkdown: string;
   /**
-   * 版本号，用于兼容性检查
+   * Version number, used for compatibility checks.
    */
   version: string;
   /**
-   * 创建时间戳
+   * Creation timestamp
    */
   createdAt: number;
   /**
-   * 更新时间戳
+   * Update timestamp
    */
   updatedAt: number;
 }
 
 /**
- * 导出批注数据为 JSON 字符串
- * @param markdown 包含标签的原始 Markdown
- * @param annotations 批注列表
- * @param marks 标记位置信息
- * @param cleanMarkdown 清理后的 Markdown（可选，如果不提供会自动计算）
- * @returns JSON 字符串
+ * Export annotation data as a JSON string
+ * @param markdown Raw Markdown containing tags
+ * @param annotations List of annotations
+ * @param marks Mark location information
+ * @param cleanMarkdown Cleaned Markdown (optional; automatically calculated if not provided)
+ * @returns JSON string
  */
 export function exportAnnotationData(
   markdown: string,
@@ -63,16 +63,16 @@ export function exportAnnotationData(
 }
 
 /**
- * 从 JSON 字符串导入批注数据
- * @param jsonString JSON 字符串
- * @returns 批注数据对象
- * @throws 如果 JSON 格式不正确或版本不兼容
+ * Import annotation data from a JSON string
+ * @param jsonString JSON string
+ * @returns Annotation data object
+ * @throws If the JSON format is invalid or the version is incompatible
  */
 export function importAnnotationData(jsonString: string): AnnotationData {
   try {
     const data = JSON.parse(jsonString) as AnnotationData;
 
-    // 验证必需字段
+    // Validate required fields
     if (!data.annotations || !Array.isArray(data.annotations)) {
       throw new Error("Invalid annotation data: annotations must be an array");
     }
@@ -85,7 +85,7 @@ export function importAnnotationData(jsonString: string): AnnotationData {
       throw new Error("Invalid annotation data: markdown must be a string");
     }
 
-    // 更新时间戳
+    // Update timestamp
     data.updatedAt = Date.now();
     if (!data.createdAt) {
       data.createdAt = Date.now();
@@ -101,8 +101,8 @@ export function importAnnotationData(jsonString: string): AnnotationData {
 }
 
 /**
- * 导出批注数据为简化格式（仅包含批注和标记，不包含 Markdown）
- * 适用于只需要批注数据的场景
+ * Export annotation data in a simplified format (containing only annotations and markers, excluding Markdown)
+ * Suitable for scenarios requiring only annotation data
  */
 export interface SimplifiedAnnotationData {
   annotations: AnnotationItem[];
@@ -112,10 +112,10 @@ export interface SimplifiedAnnotationData {
 }
 
 /**
- * 导出简化格式的批注数据
- * @param annotations 批注列表
- * @param marks 标记位置信息
- * @returns JSON 字符串
+ * Export annotation data in a simplified format
+ * @param annotations List of annotations
+ * @param marks Marker position information
+ * @returns JSON string
  */
 export function exportSimplifiedAnnotationData(
   annotations: AnnotationItem[],
@@ -132,9 +132,9 @@ export function exportSimplifiedAnnotationData(
 }
 
 /**
- * 从简化格式导入批注数据
- * @param jsonString JSON 字符串
- * @returns 简化格式的批注数据
+ * Import annotation data from a simplified format
+ * @param jsonString JSON string
+ * @returns Annotation data in the simplified format
  */
 export function importSimplifiedAnnotationData(jsonString: string): SimplifiedAnnotationData {
   try {
@@ -160,15 +160,15 @@ export function importSimplifiedAnnotationData(jsonString: string): SimplifiedAn
 }
 
 /**
- * 持久化回调函数的类型定义
+ * Type definition for the persistence callback function
  */
 export type PersistenceCallback = (data: AnnotationData) => void | Promise<void>;
 
 /**
- * 创建防抖的持久化函数
- * @param callback 持久化回调函数
- * @param delay 防抖延迟时间（毫秒），默认 500ms
- * @returns 防抖后的持久化函数
+ * Create a debounced persistent function
+ * @param callback Persistent callback function
+ * @param delay Debounce delay (milliseconds), default 500ms
+ * @returns Debounced persistent function
  */
 export function createDebouncedPersistence(
   callback: PersistenceCallback,

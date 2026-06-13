@@ -21,13 +21,13 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
     const popoverRef = useRef<HTMLDivElement>(null);
     const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
 
-    // 将内部 ref 暴露给外部
+    // Expose the internal ref to the outside.
     useImperativeHandle(forwardedRef, () => popoverRef.current as HTMLDivElement, []);
 
-    // 检测全屏状态并选择合适的容器
+    // Detect full-screen status and select the appropriate container.
     useEffect(() => {
       const getFullscreenElement = (): Element | null => {
-        // 类型定义：浏览器前缀属性
+        // Type Definition: Browser-prefixed properties
         interface DocumentWithPrefixes extends Document {
           webkitFullscreenElement?: Element | null;
           mozFullScreenElement?: Element | null;
@@ -46,18 +46,18 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
       const updatePortalContainer = () => {
         const fullscreenElement = getFullscreenElement();
         if (fullscreenElement && fullscreenElement instanceof HTMLElement) {
-          // 如果在全屏模式，使用全屏元素作为容器
+          // If in full-screen mode, use the full-screen element as the container.
           setPortalContainer(fullscreenElement);
         } else {
-          // 否则使用 document.body
+          // Otherwise, use document.body
           setPortalContainer(document.body);
         }
       };
 
-      // 初始设置
+      // Initial Setup
       updatePortalContainer();
 
-      // 监听全屏状态变化
+      // Listen for changes in full-screen status.
       const events = [
         "fullscreenchange",
         "webkitfullscreenchange",
@@ -76,15 +76,15 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
       };
     }, []);
 
-    // 智能定位：计算最佳位置，避免超出视口
+    // Smart Positioning: Calculates the optimal position to avoid extending beyond the viewport.
     const popoverStyle = useMemo(() => {
       if (!visible || typeof window === "undefined" || !portalContainer) {
         return null;
       }
 
-      // 获取全屏元素（如果存在）
+      // Get the full-screen element (if it exists)
       const getFullscreenElement = (): Element | null => {
-        // 类型定义：浏览器前缀属性
+        // Type Definition: Browser-prefixed properties
         interface DocumentWithPrefixes extends Document {
           webkitFullscreenElement?: Element | null;
           mozFullScreenElement?: Element | null;
@@ -103,7 +103,7 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
       const fullscreenElement = getFullscreenElement();
       const isFullscreen = fullscreenElement !== null;
 
-      // 获取容器的边界信息
+      // Get the container's boundary information.
       let containerRect: DOMRect;
       if (isFullscreen && fullscreenElement instanceof HTMLElement) {
         containerRect = fullscreenElement.getBoundingClientRect();
@@ -116,104 +116,104 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
         } as DOMRect;
       }
 
-      // 选中文本的位置信息（相对于视口）
+      // Position information of the selected text (relative to the viewport)
       const selectionTop = position.y;
       const selectionBottom = position.y + position.height;
 
-      // 计算上方和下方可用空间（相对于容器）
+      // Calculate the available space above and below (relative to the container).
       const spaceAbove = selectionTop - containerRect.top - 16;
       const spaceBelow = containerRect.top + containerRect.height - selectionBottom - 16;
 
-      // 计算理想位置：优先放在上方，确保不遮挡选中文本
+      // Calculate the ideal position: put it at the top first to ensure that the selected text is not blocked
       let top: number;
       let placement: "top" | "bottom" = "top";
 
-      // 计算上方理想位置：弹窗底部应该在选中文本顶部上方，留出足够的空间
-      // 弹窗底部 = top + POPOVER_HEIGHT
-      // 箭头从弹窗底部向下延伸 ARROW_SIZE (8px)
-      // 箭头底部 = top + POPOVER_HEIGHT + ARROW_SIZE
-      // 选中文本顶部 = selectionTop
-      // 需要：箭头底部到选中文本顶部有足够的间距（100px）
-      // 所以：top + POPOVER_HEIGHT + ARROW_SIZE <= selectionTop - LARGE_GAP
-      // 即：top <= selectionTop - POPOVER_HEIGHT - ARROW_SIZE - LARGE_GAP
-      const LARGE_GAP = 100; // 弹窗在上方时，箭头底部到选中文本的间距
+      // Calculate the ideal position above: the bottom of the popover should be above the top of the selected text, leaving sufficient space
+      // Popover bottom = top + POPOVER_HEIGHT
+      // Arrow extends downwards from the popover bottom by ARROW_SIZE (8px)
+      // Arrow bottom = top + POPOVER_HEIGHT + ARROW_SIZE
+      // Selected text top = selectionTop
+      // Requirement: sufficient spacing (100px) between the arrow bottom and the selected text top
+      // Therefore: top + POPOVER_HEIGHT + ARROW_SIZE <= selectionTop - LARGE_GAP
+      // i.e.: top <= selectionTop - POPOVER_HEIGHT - ARROW_SIZE - LARGE_GAP
+      const LARGE_GAP = 100; // Spacing between the arrow bottom and the selected text when the popover is positioned above
       const idealTopAbove = selectionTop - POPOVER_HEIGHT - ARROW_SIZE - LARGE_GAP;
       const minTop = containerRect.top + 16;
       const maxTop = containerRect.top + containerRect.height - POPOVER_HEIGHT - 16;
 
-      // 计算下方理想位置：弹窗顶部应该在选中文本底部下方，留出足够的空间
-      // 弹窗顶部 = top
-      // 选中文本底部 = selectionBottom
-      // 需要：top >= selectionBottom + GAP
+      // Calculate the ideal position below: the top of the popup should be below the bottom of the selected text, leaving sufficient space
+      // Popup top = top
+      // Selected text bottom = selectionBottom
+      // Requirement: top >= selectionBottom + GAP
       const idealTopBelow = selectionBottom + GAP + ARROW_SIZE;
 
-      // 判断是否可以放在上方（不遮挡文本且不超出边界）
-      // 确保箭头底部（top + POPOVER_HEIGHT + ARROW_SIZE）不高于选中文本顶部（selectionTop - LARGE_GAP）
+      // Check if it can be placed above (without obscuring text or exceeding boundaries)
+      // Ensure the bottom of the arrow (top + POPOVER_HEIGHT + ARROW_SIZE) is not higher than the top of the selected text (selectionTop - LARGE_GAP)
       const canPlaceAbove =
         idealTopAbove >= minTop &&
         idealTopAbove <= maxTop &&
         idealTopAbove + POPOVER_HEIGHT + ARROW_SIZE <= selectionTop - LARGE_GAP;
 
-      // 判断是否可以放在下方（不遮挡文本且不超出边界）
+      // Check if it can be placed below (without obscuring text or exceeding boundaries)
       const canPlaceBelow =
         idealTopBelow >= minTop &&
         idealTopBelow <= maxTop &&
         idealTopBelow >= selectionBottom + GAP;
 
       if (canPlaceAbove) {
-        // 可以放在上方，优先选择
+        // It can be placed at the top; it is the preferred choice.
         top = idealTopAbove;
         placement = "top";
       } else if (canPlaceBelow) {
-        // 可以放在下方
+        // You can place it below.
         top = idealTopBelow;
         placement = "bottom";
       } else {
-        // 上下都不理想，选择相对更好的位置
+        // Neither the upper nor the lower position is ideal; choose the relatively better one.
         if (spaceAbove > spaceBelow) {
-          // 尝试放在上方，但确保不遮挡文本
+          // Try placing it at the top, but ensure it doesn't obscure the text.
           top = Math.max(minTop, Math.min(maxTop, idealTopAbove));
           placement = "top";
-          // 如果会遮挡文本，强制调整
+          // Force adjustment if it would obscure the text.
           if (top + POPOVER_HEIGHT > selectionTop - GAP) {
-            // 上方会遮挡，改为下方
+            // The top position would be obstructed, so it has been moved to the bottom.
             top = Math.max(minTop, Math.min(maxTop, idealTopBelow));
             placement = "bottom";
-            // 如果下方也会遮挡，至少保证最小间距
+            // If the area below is also obstructed, ensure at least the minimum clearance.
             if (top < selectionBottom + GAP) {
               top = selectionBottom + GAP;
             }
           }
         } else {
-          // 放在下方
+          // Place it at the bottom.
           top = Math.max(minTop, Math.min(maxTop, idealTopBelow));
           placement = "bottom";
-          // 如果会遮挡文本，强制调整
+          // Force adjustment if it would obscure the text.
           if (top < selectionBottom + GAP) {
             top = selectionBottom + GAP;
           }
         }
       }
 
-      // 最终验证：确保不遮挡选中文本
+      // Final verification: Ensure the selected text is not obscured.
       if (placement === "top") {
-        // 弹窗在上方：确保箭头底部（top + POPOVER_HEIGHT + ARROW_SIZE）不高于选中文本顶部（留出 LARGE_GAP 空间）
+        // For popovers positioned above: Ensure the bottom of the arrow (top + POPOVER_HEIGHT + ARROW_SIZE) is not higher than the top of the selected text (leaving a LARGE_GAP).
         const arrowBottom = top + POPOVER_HEIGHT + ARROW_SIZE;
         if (arrowBottom > selectionTop - LARGE_GAP) {
-          // 会遮挡文本，改为下方
+          // It would obscure the text; changed to the position below.
           top = Math.max(idealTopBelow, selectionBottom + GAP);
           placement = "bottom";
         }
       } else {
-        // 弹窗在下方：确保弹窗顶部不低于选中文本底部（留出 GAP 空间）
+        // Popup positioned below: Ensure the top of the popup is not lower than the bottom of the selected text (leaving a gap).
         if (top < selectionBottom + GAP) {
           top = selectionBottom + GAP;
         }
       }
 
-      // 最终边界检查：确保不超出容器（但不能以遮挡文本为代价）
+      // Final boundary check: Ensure it does not extend beyond the container (but not at the cost of obscuring text).
       if (top < minTop) {
-        // 如果上方空间不足，尝试下方
+        // If there is insufficient space above, try below.
         if (placement === "top" && idealTopBelow >= minTop && idealTopBelow <= maxTop) {
           top = idealTopBelow;
           placement = "bottom";
@@ -223,13 +223,13 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
       }
 
       if (top + POPOVER_HEIGHT > maxTop + 16) {
-        // 如果下方空间不足，尝试上方
+        // If there isn't enough space below, try above.
         if (placement === "bottom" && idealTopAbove >= minTop && idealTopAbove <= maxTop) {
           top = idealTopAbove;
           placement = "top";
-          // 再次验证不遮挡文本
+          // Verify again that the text is not obscured.
           if (top + POPOVER_HEIGHT + ARROW_SIZE > selectionTop - LARGE_GAP) {
-            // 仍然会遮挡，保持在下方但调整位置
+            // It will still cause obstruction; keep it at the bottom but adjust its position.
             top = Math.max(minTop, selectionBottom + GAP);
             placement = "bottom";
           }
@@ -238,36 +238,37 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
         }
       }
 
-      // 水平定位：优先让箭头准确指向选中文本
-      // position.x 是选中文本中心的视口坐标
+      // Horizontal positioning: Prioritize accurately pointing the arrow at the selected text
+      // position.x is the viewport coordinate of the center of the selected text
       const selectionCenterX = position.x;
-      const ARROW_MIN_MARGIN = 12; // 箭头到弹窗边缘的最小距离
+      const ARROW_MIN_MARGIN = 12; // Minimum distance from the arrow to the edge of the popup
 
-      // 理想情况下，弹窗应该居中于选中文本
-      // 但如果选中文本靠近边缘，我们需要调整弹窗位置，确保箭头能够指向选中文本
+      // Ideally, the popup should be centered relative to the selected text
+      // However, if the selected text is near an edge, we need to adjust the popup's position
+      // to ensure the arrow can point to the selected text
       let left = selectionCenterX - POPOVER_WIDTH / 2;
       const minLeft = containerRect.left + 16;
       const maxLeft = containerRect.left + containerRect.width - POPOVER_WIDTH - 16;
 
-      // 如果弹窗需要调整位置（因为边界限制），我们需要确保箭头仍然能够指向选中文本
-      // 计算箭头在弹窗内的理想位置
+      // If the popup needs to be repositioned (due to boundary constraints), we need to ensure the arrow still points to the selected text.
+      // Calculate the ideal position of the arrow within the popup.
       const idealArrowLeft = selectionCenterX - left;
 
-      // 如果理想箭头位置超出限制，调整弹窗位置以容纳箭头
+      // If the ideal arrow position exceeds the limits, adjust the popup position to accommodate the arrow.
       if (idealArrowLeft < ARROW_MIN_MARGIN) {
-        // 箭头太靠左，调整弹窗向右移动
+        // The arrow is too far to the left; adjust the popup to move it to the right.
         left = selectionCenterX - ARROW_MIN_MARGIN;
         if (left < minLeft) {
           left = minLeft;
         }
       } else if (idealArrowLeft > POPOVER_WIDTH - ARROW_MIN_MARGIN) {
-        // 箭头太靠右，调整弹窗向左移动
+        // The arrow is too far to the right; adjust the popup to move it to the left.
         left = selectionCenterX - (POPOVER_WIDTH - ARROW_MIN_MARGIN);
         if (left > maxLeft) {
           left = maxLeft;
         }
       } else {
-        // 箭头位置在合理范围内，但弹窗可能因为边界限制需要调整
+        // The arrow position is within a reasonable range, but the pop-up may require adjustment due to boundary constraints.
         if (left < minLeft) {
           left = minLeft;
         } else if (left > maxLeft) {
@@ -275,10 +276,10 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
         }
       }
 
-      // 重新计算箭头位置（基于调整后的弹窗位置）
+      // Recalculate the arrow position (based on the adjusted popup position)
       const arrowLeft = selectionCenterX - left;
 
-      // 限制箭头位置，确保不会超出弹窗边界
+      // Restrict the arrow's position to ensure it does not extend beyond the popup's boundaries.
       const clampedArrowLeft = Math.max(
         ARROW_MIN_MARGIN,
         Math.min(POPOVER_WIDTH - ARROW_MIN_MARGIN, arrowLeft)
@@ -292,7 +293,7 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
       };
     }, [visible, position, portalContainer]);
 
-    // 自动聚焦
+    // Autofocus
     useEffect(() => {
       if (visible && textareaRef.current) {
         textareaRef.current.focus();
@@ -300,14 +301,14 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
       }
     }, [visible]);
 
-    // 重置状态
+    // Reset status
     useEffect(() => {
       if (!visible) {
         setNote("");
       }
     }, [visible]);
 
-    // 键盘事件处理
+    // Keyboard Event Handling
     useEffect(() => {
       if (!visible) return;
 
@@ -327,25 +328,25 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
       return () => window.removeEventListener("keydown", handleKeyDown);
     }, [visible, note, onConfirm, onCancel]);
 
-    // 点击外部关闭
+    // Click outside to close
     useEffect(() => {
       if (!visible) return;
 
       const handlePointerOutside = (event: MouseEvent | TouchEvent) => {
-        // 如果点击的是弹窗内的任何元素（包括按钮），都不关闭
-        // 只有点击外部区域才关闭
+        // Do not close if any element within the popup (including buttons) is clicked
+        // Close only when clicking the area outside the popup
         const target = event.target as Node;
         if (popoverRef.current && popoverRef.current.contains(target)) {
-          // 不阻止事件传播，让按钮的 onClick 可以正常触发
+          // Do not stop event propagation, allowing the button's onClick to trigger normally.
           return;
         }
 
-        // 点击的是外部区域，关闭弹窗
+        // Clicking outside the area closes the pop-up.
         onCancel();
       };
 
-      // 使用 capture 阶段捕获，但不在 capture 阶段阻止事件
-      // 延迟添加事件监听，避免立即触发（给用户时间点击输入框）
+      // Capture during the capture phase, but do not stop the event propagation at that stage
+      // Delay adding the event listener to avoid immediate triggering (giving the user time to click the input box)
       const timer = setTimeout(() => {
         document.addEventListener("mousedown", handlePointerOutside, true);
         document.addEventListener("touchstart", handlePointerOutside, true);
@@ -382,21 +383,21 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
           left: popoverStyle.left,
         }}
         role="dialog"
-        aria-label="添加批注"
+        aria-label="Add a comment"
         onMouseDown={(e) => {
-          // 阻止事件冒泡，防止触发外部点击关闭逻辑
+          // Stop event propagation to prevent triggering the logic that closes the element upon an external click.
           e.stopPropagation();
         }}
         onClick={(e) => {
-          // 阻止事件冒泡，防止触发外部点击关闭逻辑
+          // Stop event propagation to prevent triggering the logic that closes the element upon an external click.
           e.stopPropagation();
         }}
         onMouseUp={(e) => {
-          // 阻止事件冒泡，防止触发外部点击关闭逻辑
+          // Stop event propagation to prevent triggering the logic that closes the element upon an external click.
           e.stopPropagation();
         }}
       >
-        {/* 箭头 */}
+        {/* arrow */}
         <div
           className={`annotation-popover-arrow annotation-popover-arrow-${popoverStyle.placement}`}
           style={{
@@ -404,24 +405,24 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
           }}
         />
 
-        {/* 内容 */}
+        {/* content */}
         <div
           className="annotation-popover-content"
           onMouseDown={(e) => {
-            // 阻止事件冒泡，防止触发外部点击关闭逻辑
+            // Stop event propagation to prevent triggering the logic that closes the element upon an external click.
             e.stopPropagation();
           }}
           onClick={(e) => {
-            // 阻止事件冒泡，防止触发外部点击关闭逻辑
+            // Stop event propagation to prevent triggering the logic that closes the element upon an external click.
             e.stopPropagation();
           }}
           onMouseUp={(e) => {
-            // 阻止事件冒泡，防止触发外部点击关闭逻辑
+            // Stop event propagation to prevent triggering the logic that closes the element upon an external click.
             e.stopPropagation();
           }}
         >
           <div className="annotation-popover-header">
-            <div className="annotation-popover-title">添加批注</div>
+            <div className="annotation-popover-title">Add a comment</div>
             <button
               type="button"
               className="annotation-popover-close"
@@ -431,10 +432,10 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
                 onCancel();
               }}
               onMouseDown={(e) => {
-                // 阻止事件冒泡，防止触发外部点击关闭逻辑
+                // Stop event propagation to prevent triggering the logic that closes the element upon an external click.
                 e.stopPropagation();
               }}
-              aria-label="关闭"
+              aria-label="Close"
             >
               ×
             </button>
@@ -470,7 +471,7 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
                 e.stopPropagation();
               }}
             >
-              批注内容
+              Annotation content
             </label>
             <textarea
               ref={textareaRef}
@@ -486,7 +487,7 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
               onFocus={(e) => {
                 e.stopPropagation();
               }}
-              placeholder="输入你的批注内容..."
+              placeholder="Enter your annotation content"
               rows={3}
             />
           </div>
@@ -501,23 +502,23 @@ export const PopoverEditor = forwardRef<HTMLDivElement, PopoverEditorProps>(
                 onCancel();
               }}
               onMouseDown={(e) => {
-                // 阻止事件冒泡，防止触发外部点击关闭逻辑
+                // Stop event propagation to prevent triggering the logic that closes the element upon an external click.
                 e.stopPropagation();
               }}
             >
-              取消
+              Cancel
             </button>
             <button
               type="button"
               className="annotation-popover-button annotation-popover-button-confirm"
               onClick={handleConfirm}
               onMouseDown={(e) => {
-                // 阻止事件冒泡，防止触发外部点击关闭逻辑
+                // Stop event propagation to prevent triggering the logic that closes the element upon an external click.
                 e.stopPropagation();
               }}
               disabled={!note.trim()}
             >
-              确认
+              Confirm
             </button>
           </div>
         </div>

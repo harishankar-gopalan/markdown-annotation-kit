@@ -36,7 +36,7 @@ export function useSelectionHandler({
   const tempSelectionIdRef = useRef<string>("");
   const selectionContextRef = useRef<{ before: string; after: string } | null>(null);
 
-  // 清理临时选中的 span
+  // Clear temporarily selected span
   const cleanupTempSelection = useCallback(() => {
     if (tempSelectionSpanRef.current) {
       const parent = tempSelectionSpanRef.current.parentNode;
@@ -52,7 +52,7 @@ export function useSelectionHandler({
     }
   }, []);
 
-  // 获取选中文本的上下文
+  // Get the context of the selected text
   const getSelectionContext = useCallback(
     (range: Range, container: HTMLElement): { before: string; after: string } => {
       const contextLength = 50;
@@ -86,23 +86,23 @@ export function useSelectionHandler({
 
   const handleSelection = useCallback(
     (event?: SelectionEvent) => {
-      // 如果点击的是弹窗内的元素，不处理选择逻辑
+      // If the clicked element is inside the pop-up window, do not process the selection logic.
       if (event) {
         const target = event.target as Node;
         if (popoverRef.current && popoverRef.current.contains(target)) {
-          // 阻止事件继续传播，避免触发其他逻辑
+          // Prevent the event from propagating further and avoid triggering other logic.
           event.stopPropagation();
           event.preventDefault();
           return;
         }
       }
 
-      // 如果弹窗已经显示，检查点击目标是否在弹窗内
-      // 如果点击的是弹窗内的元素，不处理选择逻辑，也不关闭弹窗
+      // If the pop-up is already displayed, check whether the click target is inside the pop-up.
+      // If an element within the pop-up is clicked, neither the selection logic is processed nor the pop-up closed.
       if (selection.visible && event && popoverRef.current) {
         const target = event.target as Node;
         if (popoverRef.current.contains(target)) {
-          // 点击的是弹窗内的元素，不处理选择逻辑，不关闭弹窗
+          // Clicking an element within the pop-up; the selection logic is not processed, and the pop-up is not closed.
           event.stopPropagation();
           event.preventDefault();
           return;
@@ -128,7 +128,7 @@ export function useSelectionHandler({
       }
 
       if (markdownRef.current.contains(range.commonAncestorContainer)) {
-        // 检查是否在已标记区域内
+        // Check if it is within the marked area.
         const checkIfInMarkedArea = (node: Node): boolean => {
           let parent = node.nodeType === Node.TEXT_NODE ? node.parentElement : (node as Element);
           while (parent && parent !== markdownRef.current) {
@@ -147,7 +147,7 @@ export function useSelectionHandler({
         const context = getSelectionContext(range, markdownRef.current);
         selectionContextRef.current = context;
 
-        // 用临时 span 包裹选中的文本
+        // Wrap the selected text in a temporary span.
         try {
           const span = document.createElement("span");
           const tempId = `temp-selection-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;

@@ -4,8 +4,8 @@ import App from './App';
 import TestCaseApp from './TestCaseApp';
 import './index.css';
 
-// 通过 URL 参数切换测试用例
-// 访问 http://localhost:3000?test=true 查看测试用例
+// Switch test cases via URL parameters.
+// Visit http://localhost:3000?test=true to view the test cases.
 const urlParams = new URLSearchParams(window.location.search);
 const useTestCase = urlParams.get('test') === 'true';
 

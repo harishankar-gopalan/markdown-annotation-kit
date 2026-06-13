@@ -18,9 +18,9 @@ export type MarkdownAnnotatorProps = {
   annotations?: AnnotationItem[];
   onAnnotationsChange?: (next: AnnotationItem[]) => void;
   /**
-   * 批注数据变化时的持久化回调
-   * 当批注被添加、编辑或删除时，会自动调用此函数
-   * @param data 完整的批注数据，包含 Markdown、批注列表和标记位置
+   * Persistence callback for annotation data changes
+   * This function is automatically called when an annotation is added, edited, or deleted.
+   * @param data The complete annotation data, including Markdown, the list of annotations, and marker positions.
    */
   onPersistence?: (data: {
     markdown: string;
@@ -29,8 +29,8 @@ export type MarkdownAnnotatorProps = {
     cleanMarkdown: string;
   }) => void | Promise<void>;
   /**
-   * 持久化回调的防抖延迟时间（毫秒）
-   * 默认 500ms，设置为 0 表示不使用防抖
+   * Debounce delay for the persistence callback (in milliseconds)
+   * Default is 500ms; set to 0 to disable debouncing
    */
   persistenceDebounce?: number;
   className?: string;
@@ -76,7 +76,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const selectionChangeTimeoutRef = useRef<number | null>(null);
 
-  // 创建持久化回调（带防抖）
+  // Create a persistent callback (with debounce)
   const persistenceCallbackRef = useRef<ReturnType<typeof createDebouncedPersistence> | null>(null);
 
   useEffect(() => {
@@ -128,7 +128,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     setSidebarOpen(!isMobileLayout);
   }, [isMobileLayout]);
 
-  // 触发持久化回调
+  // Trigger persistence callback
   const triggerPersistence = useCallback(() => {
     if (persistenceCallbackRef.current) {
       persistenceCallbackRef.current({
@@ -146,7 +146,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
   const [editIndex, setEditIndex] = useState<number>(-1);
   const [editValue, setEditValue] = useState<string>("");
 
-  // 使用选择处理 hook
+  // Use selection handling hook
   const {
     selection,
     setSelection,
@@ -158,11 +158,11 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     markdownRef,
     popoverRef,
     onSelection: useCallback(() => {
-      // 选择处理逻辑已在 hook 中完成
+      // The selection processing logic has been implemented within the hook.
     }, []),
   });
 
-  // 监听鼠标事件
+  // Listen for mouse events
   const clearPendingSelection = useCallback(() => {
     if (selectionChangeTimeoutRef.current) {
       window.clearTimeout(selectionChangeTimeoutRef.current);
@@ -234,7 +234,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     return () => document.removeEventListener("selectionchange", onSelectionChange);
   }, [scheduleHandleSelection]);
 
-  // 同步外部 annotations
+  // Synchronize with external annotations
   useEffect(() => {
     if (annotations && annotations.length) {
       setAnn(annotations);
@@ -242,7 +242,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annotations]);
 
-  // 确认批注
+  // Confirm annotation
   const confirmAnnotation = useCallback(
     (note: string) => {
       const selectedText = selection.text;
@@ -252,14 +252,14 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
         return;
       }
 
-      // 优先使用上下文方法（split + 前后文）精确定位
+      // Prioritize using the context-based method (split + surrounding context) for precise localization.
       let position: { start: number; end: number } | null = null;
 
       if (selectionContextRef.current) {
         position = getTextPositionByContext(clean, selectedText, selectionContextRef.current);
       }
 
-      // 如果上下文方法失败，尝试使用临时 span 方法
+      // If the context method fails, try using the temporary span method.
       if (!position && tempSelectionSpanRef.current && markdownRef.current) {
         const span = tempSelectionSpanRef.current;
 
@@ -306,7 +306,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
         }
       }
 
-      // 如果所有方法都失败，拒绝标记
+      // Reject the tag if all methods fail.
       if (!position) {
         console.error("Failed to calculate accurate position for annotation");
         cleanupTempSelection();
@@ -316,7 +316,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
 
       const { start, end } = position;
 
-      // 验证位置是否在有效范围内
+      // Verify whether the location is within the valid range.
       if (start < 0 || end < 0 || start >= end || start > clean.length || end > clean.length) {
         console.error("Invalid position:", { start, end, cleanLength: clean.length });
         cleanupTempSelection();
@@ -324,7 +324,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
         return;
       }
 
-      // 验证位置对应的文本是否匹配（使用更宽松的匹配）
+      // Verify whether the text at the corresponding location matches (using looser matching).
       const positionText = clean.slice(start, end);
       const normalizedPosition = positionText.replace(/\s+/g, " ").trim();
       const normalizedSelected = selectedText.replace(/\s+/g, " ").trim();
@@ -357,12 +357,12 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
       if (isAnnControlled) onAnnotationsChange && onAnnotationsChange(nextAnn);
       else setAnn(nextAnn);
 
-      // 触发持久化回调
+      // Trigger persistence callback
       setTimeout(() => {
         triggerPersistence();
       }, 0);
 
-      // 清理临时选中标记
+      // Clear temporary selection markers
       cleanupTempSelection();
       window.getSelection()?.removeAllRanges();
       setSelection({ visible: false, x: 0, y: 0, height: 0, text: "" });
@@ -389,7 +389,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     ]
   );
 
-  // 锚点到高亮
+  // Anchor to Highlight
   const ensureSidebarVisible = useCallback(() => {
     if (isMobileLayout && !sidebarOpen) {
       setSidebarOpen(true);
@@ -421,7 +421,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     [ann, ensureSidebarVisible]
   );
 
-  // 处理编辑
+  // Process edits
   const handleEdit = useCallback(
     (idx: number, cancel?: boolean) => {
       if (cancel) {
@@ -437,7 +437,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     [ann]
   );
 
-  // 确认编辑
+  // Confirm Edit
   const confirmEdit = useCallback(
     (idx: number) => {
       if (!editValue.trim()) return;
@@ -448,7 +448,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
       setEditIndex(-1);
       setEditValue("");
 
-      // 触发持久化回调
+      // Trigger persistence callback
       setTimeout(() => {
         triggerPersistence();
       }, 0);
@@ -456,7 +456,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     [editValue, ann, isAnnControlled, onAnnotationsChange, setAnn, triggerPersistence]
   );
 
-  // 删除批注
+  // Delete comment
   const deleteAnnotation = useCallback(
     (idx: number) => {
       const item = ann[idx];
@@ -489,7 +489,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     ]
   );
 
-  // 高亮点击处理
+  // Highlight click handling
   const handleHighlightClick = useCallback(
     (id: number) => {
       const openTriggered = ensureSidebarVisible();
@@ -516,7 +516,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     [ann, editIndex, ensureSidebarVisible]
   );
 
-  // 取消批注
+  // Cancel comment
   const handleCancelAnnotation = useCallback(() => {
     cleanupTempSelection();
     setSelection({ visible: false, x: 0, y: 0, height: 0, text: "" });
@@ -569,13 +569,13 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
       {isMobileLayout && (
         <>
           <button className="markdown-annotator-sidebar-toggle" onClick={toggleSidebar}>
-            {sidebarOpen ? "收起批注" : "查看批注"}
+            {sidebarOpen ? "Collapse comments" : "View comments"}
           </button>
           {sidebarOpen && (
             <div
               className="markdown-annotator-sidebar-backdrop"
               onClick={closeSidebar}
-              aria-label="关闭批注侧栏"
+              aria-label="Close the comments sidebar"
             />
           )}
         </>

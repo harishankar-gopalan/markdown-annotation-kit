@@ -26,13 +26,13 @@ export function AnnotationSidebar({
     <div className="markdown-annotator-sidebar">
       <div className="markdown-annotator-sidebar-header">
         <div className="markdown-annotator-sidebar-icon">💡</div>
-        <h3 className="markdown-annotator-sidebar-title">文档批注</h3>
+        <h3 className="markdown-annotator-sidebar-title">Annotations</h3>
       </div>
       {annotations.length === 0 ? (
         <div className="markdown-annotator-empty">
           <div className="markdown-annotator-empty-icon">📝</div>
-          <div>暂无批注</div>
-          <div style={{ marginTop: "8px", fontSize: "12px" }}>选中文本添加批注吧～</div>
+          <div>No annotations added</div>
+          <div style={{ marginTop: "8px", fontSize: "12px" }}>Select text to add comment～</div>
         </div>
       ) : (
         annotations.map((annotation, index) => (

@@ -2,42 +2,40 @@ import { useState, useMemo, useCallback } from 'react';
 import { MarkdownAnnotator, AnnotationItem, exportAnnotationData, ParsedMark } from '../src/index';
 import './App.css';
 
-const DEFAULT_MARKDOWN = `# Markdown 文档批注示例
+const DEFAULT_MARKDOWN = `# Markdown Document Annotation Example
 
-## 功能特性
+## Features
 
-这是一个功能强大的 Markdown <mark_2>批注</mark_2>组件，支持以下特性：
+This is a powerful Markdown <mark_2>annotation</mark_2> component that supports the following features:
 
-- **文本选择批注** - 选中任意文本即可添加批注
-- **双向锚定** - 点击批注卡片定位到原文，点击高亮文本定位到批注
-- **标签系统** - 使用 \`<mark_N></mark_N>\` 标签持久化<mark_3>批注</mark_3>数据
-- **标签回显** - 自动识别并回显已保存的批注标签
+- **Text Selection Annotation** - Select any text to add an annotation
+- **Bidirectional Anchoring** - Click an annotation card to locate the original text; click highlighted text to locate the annotation
+- **Tagging System** - Use \`<mark_N></mark_N>\` tags to persist <mark_3>annotation</mark_3> data
+- **Tag Rendering** - Automatically recognize and render saved annotation tags
 
-> 这个组件是用来在 Markdown 文档中添加批注功能的。
+> This component adds annotation functionality to Markdown documents.
 
-> 你可以选中任意文本，在弹出的浮窗中输入批注内容，点击确认即可。
+> You can select any text, enter the annotation content in the pop-up window, and click confirm.
 
-> 你可以点击批注卡片定位到原文，点击高亮文本定位到批注。
+> You can click an annotation card to locate the original text, or click highlighted text to locate the annotation.
 
-> 你可以使用 \`<mark_N></mark_N>\` 标签持久化批注数据。
+> You can use \`<mark_N></mark_N>\` tags to persist annotation data.
 
-> 你可以自动识别并回显已保存的批注标签。
+> Saved annotation tags are automatically recognized and rendered.
 
-> 你可以使用 \`<mark_N></mark_N>\` 标签持久化批注数据。
+> You can use \`<mark_N></mark_N>\` tags to persist annotation data.
 
-## 使用说明
+## Usage Instructions
 
-1. **添加批注**：选中任意文本，在弹出的浮窗中输入批注内容，点击确认即可。
+1. **Add Annotation**: Select any text, enter the annotation content in the pop-up window, and click confirm.
 
-2. **查看批注**：侧边栏会显示所有批注卡片，点击卡片可以定位到原文位置。
+2. **View Annotations**: The sidebar displays all annotation cards; click a card to navigate to its location in the original text.
 
-3. **编辑批注**：点击批注卡片上的"编辑"按钮，修改批注内容。
+3. **Edit Annotation**: Click the "Edit" button on an annotation card to modify the content.
 
-4. **删除批注**：点击批注卡片上的"删除"按钮，移除批注。
+4. **Delete Annotation**: Click the "Delete" button on an annotation card to remove the annotation.
 
-<mark_1>这段文本已经包含了一个示例批注标签</mark_1>，你可以看到它已经被高亮显示。
-
-## 代码示例
+<mark_1>This text already contains an example annotation tag</mark_1>; you can see that it is highlighted. ## Code Example
 
 \`\`\`typescript
 import { MarkdownAnnotator } from 'markdown-annotation-kit';
@@ -45,29 +43,29 @@ import { MarkdownAnnotator } from 'markdown-annotation-kit';
 function App() {
   return (
     <MarkdownAnnotator
-      defaultValue="# 标题\\n\\n这是内容。"
+      defaultValue="# Title\n\nThis is the content."
     />
   );
 }
 \`\`\`
 
-## 更多信息
+## More Information
 
-查看 [README.md](../README.md) 了解更多使用方法和 API 文档。
+Check the [README.md](../README.md) for more usage details and API documentation.
 `;
 
 const DEFAULT_ANNOTATIONS: AnnotationItem[] = [
   {
     id: 1,
-    note: '这是一个示例批注，展示标签回显功能。你可以编辑或删除这个批注。',
+    note: 'This is a sample annotation demonstrating the tag echo feature. You can edit or delete this annotation.',
   },
   {
     id: 2,
-    note: '批注2',
+    note: 'Annotation 2',
   },
   {
     id: 3,
-    note: '批注3',
+    note: 'Annotation 3',
   },
 ];
 
@@ -89,7 +87,7 @@ function App() {
     return JSON.stringify(annotations, null, 2);
   }, [annotations]);
 
-  // 持久化回调 - 保存到 localStorage
+  // Persistence callback - save to localStorage
   const handlePersistence = useCallback(
     (data: {
       markdown: string;
@@ -98,29 +96,29 @@ function App() {
       cleanMarkdown: string;
     }) => {
       try {
-        // 保存到 localStorage
+        // Save to localStorage
         const storageKey = 'markdown-annotation-kit-data';
         const dataToSave = exportAnnotationData(data.markdown, data.annotations, data.marks, data.cleanMarkdown);
         localStorage.setItem(storageKey, dataToSave);
         setLastSaved(new Date());
         setMarks(data.marks);
-        console.log('✅ 批注数据已自动保存到 localStorage');
+        console.log('✅ Annotation data has been automatically saved to localStorage.');
       } catch (error) {
-        console.error('❌ 保存批注数据失败:', error);
+        console.error('❌ Failed to save annotation data:', error);
       }
     },
     []
   );
 
-  // 手动保存按钮
+  // Manual save button
   const handleManualSave = useCallback(() => {
     try {
       const dataToSave = exportAnnotationData(markdown, annotations, marks, markdown.replace(/<mark_\d+>|<\/mark_\d+>/g, ''));
       
-      // 保存到 localStorage
+      // Save to localStorage
       localStorage.setItem('markdown-annotation-kit-data', dataToSave);
       
-      // 同时提供下载功能
+      // Also provides download functionality
       const blob = new Blob([dataToSave], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -132,14 +130,14 @@ function App() {
       URL.revokeObjectURL(url);
       
       setLastSaved(new Date());
-      console.log('✅ 批注数据已保存并下载');
+      console.log('✅ Annotation data has been saved and downloaded.');
     } catch (error) {
-      console.error('❌ 保存批注数据失败:', error);
-      alert('保存失败，请查看控制台');
+      console.error('❌ Failed to save annotation data.:', error);
+      alert('Save failed; please check the console.');
     }
   }, [markdown, annotations, marks]);
 
-  // 加载保存的数据
+  // Load saved data
   const handleLoadSaved = useCallback(() => {
     try {
       const storageKey = 'markdown-annotation-kit-data';
@@ -149,14 +147,14 @@ function App() {
         if (data.markdown) setMarkdown(data.markdown);
         if (data.annotations) setAnnotations(data.annotations);
         if (data.marks) setMarks(data.marks);
-        console.log('✅ 已加载保存的批注数据');
-        alert('已加载保存的批注数据');
+        console.log('✅ Saved annotation data has been loaded.');
+        alert('Saved annotation data has been loaded.');
       } else {
-        alert('没有找到保存的数据');
+        alert('No saved data found.');
       }
     } catch (error) {
-      console.error('❌ 加载批注数据失败:', error);
-      alert('加载失败，请查看控制台');
+      console.error('❌ Failed to load annotation data.:', error);
+      alert('Failed to load; please check the console.');
     }
   }, []);
 
@@ -171,17 +169,17 @@ function App() {
               Markdown Annotation Kit
             </h1>
             <p className="dev-app-subtitle">
-              开发预览 - 选中文本添加批注，查看实时效果
+              Development Preview – Select text to add annotations and view real-time results.
             </p>
           </div>
           <div className="dev-app-stats">
             <div className="dev-app-stat">
-              <span className="dev-app-stat-label">批注数量</span>
+              <span className="dev-app-stat-label">Annotation count</span>
               <span className="dev-app-stat-value">{annotations.length}</span>
             </div>
             {lastSaved && (
               <div className="dev-app-stat" style={{ opacity: 0.8 }}>
-                <span className="dev-app-stat-label">最后保存</span>
+                <span className="dev-app-stat-label">Save at the end</span>
                 <span className="dev-app-stat-value" style={{ fontSize: '12px' }}>
                   {lastSaved.toLocaleTimeString()}
                 </span>
@@ -191,23 +189,23 @@ function App() {
               <button
                 onClick={handleManualSave}
                 className="dev-app-save-button"
-                title="保存批注数据到本地并下载 JSON 文件"
+                title="Save annotation data locally and download the JSON file."
               >
-                💾 保存
+                💾 Save
               </button>
               <button
                 onClick={handleLoadSaved}
                 className="dev-app-save-button"
-                title="从 localStorage 加载保存的批注数据"
+                title="Load saved annotation data from localStorage"
               >
-                📂 加载
+                📂 Load
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* 主内容区 */}
+      {/* Main Content Area */}
       <div className="dev-app-main">
         <MarkdownAnnotator
           value={markdown}
@@ -219,7 +217,7 @@ function App() {
         />
       </div>
 
-      {/* 底部数据预览 - 可折叠 */}
+      {/* Bottom Data Preview - Collapsible */}
       <div className={`dev-app-preview ${previewVisible ? 'dev-app-preview-visible' : ''}`}>
         <div className="dev-app-preview-header">
           <div className="dev-app-preview-tabs">
@@ -233,19 +231,19 @@ function App() {
               className={`dev-app-preview-tab ${previewTab === 'annotations' ? 'active' : ''}`}
               onClick={() => setPreviewTab('annotations')}
             >
-              批注数据
+              Annotation data
             </button>
             <button
               className={`dev-app-preview-tab ${previewTab === 'both' ? 'active' : ''}`}
               onClick={() => setPreviewTab('both')}
             >
-              全部
+              All
             </button>
           </div>
           <button
             className="dev-app-preview-toggle"
             onClick={() => setPreviewVisible(!previewVisible)}
-            aria-label={previewVisible ? '收起预览' : '展开预览'}
+            aria-label={previewVisible ? 'Collapse' : 'Expand'}
           >
             {previewVisible ? '▼' : '▲'}
           </button>
@@ -256,9 +254,9 @@ function App() {
               <div className="dev-app-preview-panel">
                 <div className="dev-app-preview-panel-header">
                   <span className="dev-app-preview-panel-icon">📄</span>
-                  <span className="dev-app-preview-panel-title">当前 Markdown（包含标签）</span>
+                  <span className="dev-app-preview-panel-title">Current Markdown (including tags) </span>
                   <span className="dev-app-preview-panel-badge">
-                    {markdown.length} 字符
+                    {markdown.length} characters
                   </span>
                 </div>
                 <textarea
@@ -273,9 +271,9 @@ function App() {
               <div className="dev-app-preview-panel">
                 <div className="dev-app-preview-panel-header">
                   <span className="dev-app-preview-panel-icon">💬</span>
-                  <span className="dev-app-preview-panel-title">批注数据（JSON）</span>
+                  <span className="dev-app-preview-panel-title">Annotation data（JSON）</span>
                   <span className="dev-app-preview-panel-badge">
-                    {annotations.length} 条
+                    {annotations.length} words
                   </span>
                 </div>
                 <pre className="dev-app-preview-code">

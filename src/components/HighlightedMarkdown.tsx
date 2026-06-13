@@ -15,13 +15,13 @@ function buildHighlighted(
   clean: string,
   marks: ParsedMark[]
 ): string | { html: string; codeBlockMarks: ParsedMark[]; clean: string } {
-  // 先清理 clean 中可能残留的未解析的 mark 标签（作为安全措施）
-  // 这可以防止代码块检测逻辑有问题时，mark 标签被当作普通文本显示
+  // First, clean up any unresolved 'mark' tags that might remain (as a safety measure).
+  // This prevents 'mark' tags from being displayed as plain text if the code block detection logic fails.
   const sanitizedClean = clean.replace(/<mark_\d+>/g, "").replace(/<\/mark_\d+>/g, "");
 
   if (marks.length === 0) return sanitizedClean;
 
-  // 检测哪些标注在代码块中
+  // Detect which annotations are within code blocks
   const codeBlockRanges: Array<{ start: number; end: number }> = [];
   let inCodeBlock = false;
   let codeBlockStart = 0;
@@ -40,31 +40,31 @@ function buildHighlighted(
 
       if (isCodeBlockMarker) {
         if (inCodeBlock) {
-          // 代码块结束
+          // End of code block
           codeBlockRanges.push({ start: codeBlockStart, end: i });
           inCodeBlock = false;
         } else {
-          // 代码块开始
+          // Code block starts
           codeBlockStart = i;
           inCodeBlock = true;
         }
-        i += 2; // 跳过 ```
+        i += 2; // jump over ```
         continue;
       }
     }
   }
 
-  // 如果代码块没有结束，记录到末尾
+  // If the code block has not ended, record it at the end.
   if (inCodeBlock) {
     codeBlockRanges.push({ start: codeBlockStart, end: sanitizedClean.length });
   }
 
-  // 检查标注是否在代码块中
+  // Check if the annotation is within a code block
   const isMarkInCodeBlock = (mark: ParsedMark): boolean => {
     return codeBlockRanges.some((range) => mark.start >= range.start && mark.end <= range.end);
   };
 
-  // 分离代码块内外的标注
+  // Separate annotations inside and outside code blocks
   const marksInCodeBlocks: ParsedMark[] = [];
   const marksOutsideCodeBlocks: ParsedMark[] = [];
 
@@ -85,7 +85,7 @@ function buildHighlighted(
     }
   }
 
-  // 为非代码块中的标注构建 HTML
+  // Generate HTML for annotations outside of code blocks.
   let out = "";
   let cursor = 0;
   for (const m of marksOutsideCodeBlocks) {
@@ -111,7 +111,7 @@ export function HighlightedMarkdown({
   const contentWithHighlights = typeof result === "string" ? result : result.html;
   const cleanContent = typeof result === "string" ? content : result.clean;
 
-  // 在代码块中应用高亮
+  // Apply highlighting within code blocks.
   useEffect(() => {
     const codeBlockMarks = typeof result === "string" ? [] : result.codeBlockMarks;
     if (!contentRef.current || codeBlockMarks.length === 0) return;
@@ -120,7 +120,7 @@ export function HighlightedMarkdown({
       const preElements = contentRef.current?.querySelectorAll("pre code");
       if (!preElements || preElements.length === 0) return;
 
-      // 找到所有代码块在 clean content 中的位置
+      // Find the locations of all code blocks within the clean content.
       const codeBlockRanges: Array<{ start: number; end: number; index: number }> = [];
       let inCodeBlock = false;
       let codeBlockStart = 0;
@@ -140,9 +140,9 @@ export function HighlightedMarkdown({
 
           if (isCodeBlockMarker) {
             if (inCodeBlock) {
-              // 代码块结束
-              let codeStart = codeBlockStart + 3; // 跳过 ```
-              // 跳过语言标识符
+              // End of code block
+              let codeStart = codeBlockStart + 3; // jump over ```
+              // Skip language identifier
               while (
                 codeStart < cleanContent.length &&
                 cleanContent[codeStart] !== "\n" &&
@@ -150,22 +150,22 @@ export function HighlightedMarkdown({
               ) {
                 codeStart++;
               }
-              codeStart++; // 跳过换行
+              codeStart++; // Skip line breaks
               codeBlockRanges.push({ start: codeStart, end: i, index: codeBlockIndex });
               codeBlockIndex++;
               inCodeBlock = false;
             } else {
-              // 代码块开始
+              // Code block starts
               codeBlockStart = i;
               inCodeBlock = true;
             }
-            i += 2; // 跳过 ```
+            i += 2; // jump over ```
             continue;
           }
         }
       }
 
-      // 为每个代码块应用标注
+      // Apply annotations to each code block.
       codeBlockRanges.forEach((range) => {
         const preElement = preElements[range.index] as HTMLElement;
         if (!preElement) return;
@@ -173,25 +173,25 @@ export function HighlightedMarkdown({
         const codeText = preElement.textContent || "";
         if (!codeText) return;
 
-        // 找到这个代码块范围内的标注
+        // Find the annotations within the scope of this code block.
         const marksInThisBlock = codeBlockMarks.filter(
           (mark: ParsedMark) => mark.start >= range.start && mark.end <= range.end
         );
 
         if (marksInThisBlock.length === 0) return;
 
-        // 按位置从后往前处理，避免位置偏移
+        // Process positions from back to front to avoid positional shifts.
         marksInThisBlock
           .sort((a, b) => b.start - a.start)
           .forEach((mark: ParsedMark) => {
             const markText = cleanContent.slice(mark.start, mark.end);
             const markStartInCode = mark.start - range.start;
 
-            // 在代码块文本中查找匹配的位置
+            // Find the location of a match within the code block text.
             const markIndex = codeText.indexOf(markText, Math.max(0, markStartInCode - 10));
             if (markIndex === -1) return;
 
-            // 使用 TreeWalker 找到对应的文本节点
+            // Use TreeWalker to find the corresponding text node.
             const walker = document.createTreeWalker(preElement, NodeFilter.SHOW_TEXT, null);
             let textNode: Node | null = null;
             let offset = 0;
@@ -237,7 +237,7 @@ export function HighlightedMarkdown({
       });
     };
 
-    // 延迟执行，确保 DOM 已渲染
+    // Delay execution to ensure the DOM has rendered.
     const timer = setTimeout(applyCodeBlockHighlights, 100);
     return () => clearTimeout(timer);
   }, [content, marks, cleanContent, highlightRefs, onHighlightClick, result]);
@@ -263,7 +263,7 @@ export function HighlightedMarkdown({
             }
             return <span {...props}>{children}</span>;
           },
-          // 所有其他元素使用默认渲染，样式由 CSS 控制
+          // All other elements use default rendering, with styles controlled by CSS.
         }}
       >
         {contentWithHighlights}

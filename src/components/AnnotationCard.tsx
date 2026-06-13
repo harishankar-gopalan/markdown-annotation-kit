@@ -32,7 +32,7 @@ export function AnnotationCard({
       <div className="annotation-card-header">
         <div className="annotation-card-badge">
           <span className="annotation-card-number">{index + 1}</span>
-          <span className="annotation-card-label">批注 {index + 1}</span>
+          <span className="annotation-card-label">Annotation {index + 1}</span>
         </div>
         <div className="annotation-card-actions">
           <button
@@ -42,7 +42,7 @@ export function AnnotationCard({
               onEdit(index);
             }}
           >
-            编辑
+            Edit
           </button>
           <button
             className="annotation-card-button annotation-card-button-delete"
@@ -51,7 +51,7 @@ export function AnnotationCard({
               onDelete(index);
             }}
           >
-            删除
+            Delete
           </button>
         </div>
       </div>
@@ -71,7 +71,7 @@ export function AnnotationCard({
                 onEdit(index, true);
               }}
             >
-              取消
+              Cancel
             </button>
             <button
               className="annotation-card-button-confirm"
@@ -81,7 +81,7 @@ export function AnnotationCard({
               }}
               disabled={!editValue.trim()}
             >
-              确认
+              Confirm
             </button>
           </div>
         </div>
