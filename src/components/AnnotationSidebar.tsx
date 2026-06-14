@@ -32,7 +32,7 @@ export function AnnotationSidebar({
         <div className="markdown-annotator-empty">
           <div className="markdown-annotator-empty-icon">📝</div>
           <div>No annotations added</div>
-          <div style={{ marginTop: "8px", fontSize: "12px" }}>Select text to add comment～</div>
+          <div style={{ marginTop: "8px", fontSize: "12px" }}>Select text to add comment</div>
         </div>
       ) : (
         annotations.map((annotation, index) => (
