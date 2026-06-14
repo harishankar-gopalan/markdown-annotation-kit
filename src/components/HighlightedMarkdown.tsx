@@ -1,6 +1,9 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import { useEffect, useRef } from "react";
 import { ParsedMark } from "../utils/mark";
 
@@ -245,8 +248,8 @@ export function HighlightedMarkdown({
   return (
     <div ref={contentRef} className="markdown-annotator-content">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeRaw, rehypeKatex]}
         components={{
           span: ({ className, children, ...props }) => {
             if (className === "annotation-highlight") {
@@ -262,6 +265,34 @@ export function HighlightedMarkdown({
               );
             }
             return <span {...props}>{children}</span>;
+          },
+          a: ({ href, children, ...props }) => {
+            // In-page anchor links (e.g. #S2, #fn-1) are intercepted here.
+            // Without this, a HashRouter rewrites "#anchor" to "/#anchor" and
+            // navigates away from the page instead of scrolling to the element.
+            if (href?.startsWith("#")) {
+              return (
+                <a
+                  href={href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const target = document.getElementById(href.slice(1));
+                    if (target) {
+                      target.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }}
+                  {...props}
+                >
+                  {children}
+                </a>
+              );
+            }
+            // External links open in a new tab.
+            return (
+              <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+                {children}
+              </a>
+            );
           },
           // All other elements use default rendering, with styles controlled by CSS.
         }}
