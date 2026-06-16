@@ -71,6 +71,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
   const highlightRefs = useRef<Record<number, HTMLElement | null>>({});
   const markdownRef = useRef<HTMLDivElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  const shouldPersistRef = useRef(false);
   const pointerActiveRef = useRef(false);
   const [isMobileLayout, setIsMobileLayout] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -128,8 +129,9 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
     setSidebarOpen(!isMobileLayout);
   }, [isMobileLayout]);
 
-  // Trigger persistence callback
-  const triggerPersistence = useCallback(() => {
+  useEffect(() => {
+    if (!shouldPersistRef.current) return;
+    shouldPersistRef.current = false;
     if (persistenceCallbackRef.current) {
       persistenceCallbackRef.current({
         markdown: rawMarkdown,
@@ -140,7 +142,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
-    }
+   }
   }, [rawMarkdown, ann, marks, clean]);
 
   const [editIndex, setEditIndex] = useState<number>(-1);
@@ -358,9 +360,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
       else setAnn(nextAnn);
 
       // Trigger persistence callback
-      setTimeout(() => {
-        triggerPersistence();
-      }, 0);
+      shouldPersistRef.current = true
 
       // Clear temporary selection markers
       cleanupTempSelection();
@@ -385,7 +385,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
       tempSelectionSpanRef,
       setRawMarkdown,
       setAnn,
-      triggerPersistence,
+      shouldPersistRef,
     ]
   );
 
@@ -449,11 +449,9 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
       setEditValue("");
 
       // Trigger persistence callback
-      setTimeout(() => {
-        triggerPersistence();
-      }, 0);
+      shouldPersistRef.current = true
     },
-    [editValue, ann, isAnnControlled, onAnnotationsChange, setAnn, triggerPersistence]
+    [editValue, ann, isAnnControlled, onAnnotationsChange, setAnn, shouldPersistRef]
   );
 
   // Delete comment
@@ -474,6 +472,7 @@ export function MarkdownAnnotator(props: MarkdownAnnotatorProps) {
         setEditIndex(-1);
         setEditValue("");
       }
+      shouldPersistRef.current = true;
       // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [
